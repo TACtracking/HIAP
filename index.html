@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Due Today Tasks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Agbalumo&Roboto&display=swap" rel="stylesheet">
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #e0e5ec, #ee33); /* Soft gradient background */
+            color: #333;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.6;
+        }
+
+        h1 {  font-family: "Agbalumo", system-ui;
+    font-weight: 400;    font-size: 3.5rem;    color: #2c3e50;
+h1 {
+    text-align: center;
+  font-family: "Agbalumo", system-ui;
+    font-weight: 700;
+    font-size: 2.5rem;
+    color: #2c3e50;  /* More professional color */
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+        }
+
+        /* Main container for side-by-side layout */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        /* Task List Section */
+        #task-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 30px;
+            width: 48%;  /* Adjusted width */
+        }
+
+        .task-item {
+            background: linear-gradient(135deg, #ffffff, #f7f7f7); /* Subtle gradient on task items */
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 0px 0 10px 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+border: 1px solid #999;
+        }
+
+        .task-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.2);
+            background-color: #f2f2f2;  /* Slightly darker on hover */
+        }
+
+        .due-today {
+            color: #e74c3c;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .task-details {
+            font-size: 1rem;
+            margin-top: 10px;
+            color: #666;
+        }
+
+        .task-footer {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .task-footer a {
+            text-decoration: none;
+            color: #3498db;
+            transition: color 0.3s;
+        }
+
+        .task-footer a:hover {
+            color: #2c3e50;
+        }
+
+        /* Updates Section */
+        .updates-section {
+            width: 48%; /* Adjusted width */
+            padding: 20px;
+            background: linear-gradient(135deg, #ffffff, #f7f7f7); /* Subtle gradient on the updates section */
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 0;
+border: 1px solid #999;
+        }
+
+        .updates-section h2 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        /* Mobile Friendly */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .task-item {
+                padding: 15px;
+            }
+
+            .container {
+                flex-direction: column; /* Stack sections vertically on small screens */
+                gap: 20px;
+            }
+
+            #task-list, .updates-section {
+                width: 100%; /* Make each section full-width on small screens */
+            }
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 50px;
+            padding: 20px;
+            text-align: center;
+            font-size: 1rem;
+            color: #777;
+        }
+
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <h1><img src="logo.png"><br>Trackabilities</h1>
+
+    <div class="container">
+        <!-- Task List Section -->
+        <ul id="task-list"></ul>
+
+        <!-- Updates Section -->
+        <div class="updates-section">
+            <h2>Enter New Individual</h2>
+            <div id="updates-list">
+                <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfSBUoySeAMtItEe6vRBIEGLOHjdgWMuWKajehUfXPWOVIwlg/viewform?embedded=true" width="500" height="931" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <div class="footer">
+        <p>🖕 | <a href="mailto:dpiper@tacind.com">Let me know if something is broken.</a></p>
+    </div>
+
+    <script>
+        async function fetchData() {
+            const sheetUrl = 'https://docs.google.com/spreadsheets/d/1d4uQbEFsqUz2YBVp17sddKWkqhxjJl4CzTcjnJi4tzY/gviz/tq?tqx=out:csv'; // Replace with your URL
+            const response = await fetch(sheetUrl);
+            const data = await response.text();
+            const rows = csvToArray(data);
+            displayTasks(rows);
+        }
+
+        function csvToArray(csv) {
+            const rows = csv.split("\n");
+            return rows.map(row => row.split(","));
+        }
+
+        function displayTasks(rows) {
+            const taskList = document.getElementById('task-list');
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0]; // Get today's date (yyyy-mm-dd)
+
+            rows.forEach(row => {
+                if (row.length >= 6) {  // Ensure we have enough columns (Name, Month, Day, Due Date 180 Days Later)
+                    const name = row[1];  // Name in Column B
+                    const month = row[2];  // Month in Column C
+                    const day = row[3];    // Day in Column D
+                    const dueDate180 = row[5];  // Due Date 180 days later in Column F
+
+                    // Create due date based on current year, Month (C), and Day (D)
+                    const dueDate = new Date(`${month} ${day}, ${today.getFullYear()}`);  // Build date with current year
+
+                    // Convert the 180 days later date from Column F to a Date object (ensuring correct format)
+                    const dueDate180Obj = new Date(dueDate180);
+                    
+                    // Normalize both dates to compare only the date (remove time component)
+                    dueDate.setHours(0, 0, 0, 0);
+                    dueDate180Obj.setHours(0, 0, 0, 0);
+                    today.setHours(0, 0, 0, 0);
+
+                    // Check if either the original due date or 180 days later due date is today
+                    if (isSameDay(dueDate, today) || isSameDay(dueDate180Obj, today)) {
+                        const li = document.createElement('li');
+                        li.classList.add('task-item');
+                        let dueText = `<span class="due-today">${name} - Due Today</span>`;
+
+                        // Display the original due date and the 180 days later due date
+                        if (isSameDay(dueDate, today)) {
+                            dueText += ` <span class="task-details">ISP Date: ${dueDate.toLocaleDateString()}</span>`;
+                        }
+                        if (isSameDay(dueDate180Obj, today)) {
+                            dueText += ` <span class="task-details">180 due today.</span>`;
+                        }
+
+                        li.innerHTML = dueText;
+                        taskList.appendChild(li);
+                    }
+                }
+            });
+        }
+
+        function isSameDay(date1, date2) {
+            // Check if two dates are on the same day, ignoring year
+            return date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>
