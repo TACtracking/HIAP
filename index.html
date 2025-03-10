@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Due Today Tasks</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Agbalumo&Roboto&display=swap" rel="stylesheet">
     <style>
         /* Basic Reset */
@@ -26,19 +26,15 @@
             line-height: 1.6;
         }
 
-        h1 {  font-family: "Agbalumo", system-ui;
-    font-weight: 400;    font-size: 3.5rem;    color: #2c3e50;
-h1 {
-    text-align: center;
-  font-family: "Agbalumo", system-ui;
-    font-weight: 700;
-    font-size: 2.5rem;
-    color: #2c3e50;  /* More professional color */
-    margin-bottom: 20px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
+        h1 {
+            font-family: "Agbalumo", system-ui;
+            font-weight: 700;
+            font-size: 2.5rem;
+            color: #2c3e50;  /* More professional color */
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
         }
 
         /* Main container for side-by-side layout */
@@ -69,7 +65,7 @@ h1 {
             flex-direction: column;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
-border: 1px solid #999;
+            border: 1px solid #999;
         }
 
         .task-item:hover {
@@ -106,6 +102,14 @@ border: 1px solid #999;
             color: #2c3e50;
         }
 
+        /* Divider between sections */
+        .section-divider {
+            margin: 30px 0;
+            height: 2px;
+            background-color: #ccc;
+            width: 100%;
+        }
+
         /* Updates Section */
         .updates-section {
             width: 48%; /* Adjusted width */
@@ -115,7 +119,7 @@ border: 1px solid #999;
             border-radius: 8px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
             margin-top: 0;
-border: 1px solid #999;
+            border: 1px solid #999;
         }
 
         .updates-section h2 {
@@ -203,7 +207,17 @@ border: 1px solid #999;
             const taskList = document.getElementById('task-list');
             const today = new Date();
             const todayStr = today.toISOString().split('T')[0]; // Get today's date (yyyy-mm-dd)
+            const upcomingThreshold = new Date(today);
+            upcomingThreshold.setDate(today.getDate() + 10); // Set the threshold to 10 days from today
 
+            const dueTodaySection = document.createElement('div');
+            dueTodaySection.innerHTML = '<h2>Due Today</h2>';
+            taskList.appendChild(dueTodaySection);
+            
+            const upcomingSection = document.createElement('div');
+            upcomingSection.innerHTML = '<h2>Upcoming Due Dates</h2>';
+            taskList.appendChild(upcomingSection);
+            
             rows.forEach(row => {
                 if (row.length >= 6) {  // Ensure we have enough columns (Name, Month, Day, Due Date 180 Days Later)
                     const name = row[1];  // Name in Column B
@@ -216,31 +230,48 @@ border: 1px solid #999;
 
                     // Convert the 180 days later date from Column F to a Date object (ensuring correct format)
                     const dueDate180Obj = new Date(dueDate180);
-                    
+
                     // Normalize both dates to compare only the date (remove time component)
                     dueDate.setHours(0, 0, 0, 0);
                     dueDate180Obj.setHours(0, 0, 0, 0);
                     today.setHours(0, 0, 0, 0);
+                    upcomingThreshold.setHours(0, 0, 0, 0);
 
-                    // Check if either the original due date or 180 days later due date is today
-                    if (isSameDay(dueDate, today) || isSameDay(dueDate180Obj, today)) {
-                        const li = document.createElement('li');
-                        li.classList.add('task-item');
-                        let dueText = `<span class="due-today">${name} - Due Today</span>`;
+                    const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24)); // Countdown in days
+                    
+                    // Create the list item to display the task
+                    const li = document.createElement('li');
+                    li.classList.add('task-item');
+                    
+                    let taskText = `<strong>${name}</strong>`;
 
-                        // Display the original due date and the 180 days later due date
+                    // Check if it's due today
+                    if (daysLeft === 0 || isSameDay(dueDate180Obj, today)) {
+                        taskText += ` <span class="due-today"><strong>DUE TODAY</strong></span>`;
                         if (isSameDay(dueDate, today)) {
-                            dueText += ` <span class="task-details">ISP Date: ${dueDate.toLocaleDateString()}</span>`;
+                            taskText += `<span class="task-details">ISP Date: ${dueDate.toLocaleDateString()}</span>`;
                         }
                         if (isSameDay(dueDate180Obj, today)) {
-                            dueText += ` <span class="task-details">180 due today.</span>`;
+                            taskText += `<span class="task-details">180 Due: ${dueDate180Obj.toLocaleDateString()}</span>`;
                         }
-
-                        li.innerHTML = dueText;
-                        taskList.appendChild(li);
+                        dueTodaySection.appendChild(li);
+                    } else if (dueDate >= today && dueDate <= upcomingThreshold) {
+                        taskText += ` - Due in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
+                        taskText += `<span class="task-details">ISP Date: ${dueDate.toLocaleDateString()}</span>`;
+                        if (dueDate180Obj) {
+                            taskText += `<span class="task-details">180 Date: ${dueDate180Obj.toLocaleDateString()}</span>`;
+                        }
+                        upcomingSection.appendChild(li);
                     }
+
+                    li.innerHTML = taskText;
                 }
             });
+
+            // Add a section divider between "Due Today" and "Upcoming Due Dates"
+            const sectionDivider = document.createElement('div');
+            sectionDivider.classList.add('section-divider');
+            taskList.appendChild(sectionDivider);
         }
 
         function isSameDay(date1, date2) {
