@@ -287,6 +287,15 @@ function displayTasks(rows) {
     const sectionDivider = document.createElement('div');
     sectionDivider.classList.add('section-divider');
     taskList.appendChild(sectionDivider);
+
+    // Check if both sections are empty and display the "Nothing due at this time" message
+    if (dueTodaySection.children.length <= 1) {  // Only the header is there
+        dueTodaySection.innerHTML = '<h2>Due Today</h2><p>Nothing due at this time.</p>';
+    }
+
+    if (upcomingSection.children.length <= 1) {  // Only the header is there
+        upcomingSection.innerHTML = '<h2>Upcoming Due Dates</h2><p>Nothing due at this time.</p>';
+    }
 }
 
 // Function to normalize dates to ignore the year (month/day)
@@ -307,6 +316,7 @@ function formatDate(date) {
 }
 
 fetchData();
+
 
 
 </script>
