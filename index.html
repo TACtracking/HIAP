@@ -189,97 +189,109 @@
         <p>🖕 | <a href="mailto:dpiper@tacind.com">Let me know if something is broken.</a></p>
     </div>
 
-    <script>
-        async function fetchData() {
-            const sheetUrl = 'https://docs.google.com/spreadsheets/d/1d4uQbEFsqUz2YBVp17sddKWkqhxjJl4CzTcjnJi4tzY/gviz/tq?tqx=out:csv'; // Replace with your URL
-            const response = await fetch(sheetUrl);
-            const data = await response.text();
-            const rows = csvToArray(data);
-            displayTasks(rows);
-        }
+<script>
+    async function fetchData() {
+        const sheetUrl = 'https://docs.google.com/spreadsheets/d/1d4uQbEFsqUz2YBVp17sddKWkqhxjJl4CzTcjnJi4tzY/gviz/tq?tqx=out:csv'; // Replace with your URL
+        const response = await fetch(sheetUrl);
+        const data = await response.text();
+        const rows = csvToArray(data);
+        displayTasks(rows);
+    }
 
-        function csvToArray(csv) {
-            const rows = csv.split("\n");
-            return rows.map(row => row.split(","));
-        }
+    function csvToArray(csv) {
+        const rows = csv.split("\n");
+        return rows.map(row => row.split(","));
+    }
 
-        function displayTasks(rows) {
-            const taskList = document.getElementById('task-list');
-            const today = new Date();
-            const todayStr = today.toISOString().split('T')[0]; // Get today's date (yyyy-mm-dd)
-            const upcomingThreshold = new Date(today);
-            upcomingThreshold.setDate(today.getDate() + 10); // Set the threshold to 10 days from today
+    function displayTasks(rows) {
+        const taskList = document.getElementById('task-list');
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0]; // Get today's date (yyyy-mm-dd)
+        const upcomingThreshold = new Date(today);
+        upcomingThreshold.setDate(today.getDate() + 10); // Set the threshold to 10 days from today
 
-            const dueTodaySection = document.createElement('div');
-            dueTodaySection.innerHTML = '<h2>Due Today</h2>';
-            taskList.appendChild(dueTodaySection);
-            
-            const upcomingSection = document.createElement('div');
-            upcomingSection.innerHTML = '<h2>Upcoming Due Dates</h2>';
-            taskList.appendChild(upcomingSection);
-            
-            rows.forEach(row => {
-                if (row.length >= 6) {  // Ensure we have enough columns (Name, Month, Day, Due Date 180 Days Later)
-                    const name = row[1];  // Name in Column B
-                    const month = row[2];  // Month in Column C
-                    const day = row[3];    // Day in Column D
-                    const dueDate180 = row[5];  // Due Date 180 days later in Column F
+        const dueTodaySection = document.createElement('div');
+        dueTodaySection.innerHTML = '<h2>Due Today</h2>';
+        taskList.appendChild(dueTodaySection);
 
-                    // Create due date based on current year, Month (C), and Day (D)
-                    const dueDate = new Date(`${month} ${day}, ${today.getFullYear()}`);  // Build date with current year
+        const upcomingSection = document.createElement('div');
+        upcomingSection.innerHTML = '<h2>Upcoming Due Dates</h2>';
+        taskList.appendChild(upcomingSection);
 
-                    // Convert the 180 days later date from Column F to a Date object (ensuring correct format)
-                    const dueDate180Obj = new Date(dueDate180);
+        // Create an array to store upcoming tasks so we can sort them
+        const upcomingTasks = [];
 
-                    // Normalize both dates to compare only the date (remove time component)
-                    dueDate.setHours(0, 0, 0, 0);
-                    dueDate180Obj.setHours(0, 0, 0, 0);
-                    today.setHours(0, 0, 0, 0);
-                    upcomingThreshold.setHours(0, 0, 0, 0);
+        rows.forEach(row => {
+            if (row.length >= 6) {  // Ensure we have enough columns (Name, Month, Day, Due Date 180 Days Later)
+                const name = row[1];  // Name in Column B
+                const month = row[2];  // Month in Column C
+                const day = row[3];    // Day in Column D
+                const dueDate180 = row[5];  // Due Date 180 days later in Column F
 
-                    const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24)); // Countdown in days
-                    
-                    // Create the list item to display the task
-                    const li = document.createElement('li');
-                    li.classList.add('task-item');
-                    
-                    let taskText = `<strong>${name}</strong>`;
+                // Create due date based on current year, Month (C), and Day (D)
+                const dueDate = new Date(`${month} ${day}, ${today.getFullYear()}`);  // Build date with current year
 
-                    // Check if it's due today
-                    if (daysLeft === 0 || isSameDay(dueDate180Obj, today)) {
-                        taskText += ` <span class="due-today"><strong>DUE TODAY</strong></span>`;
-                        if (isSameDay(dueDate, today)) {
-                            taskText += `<span class="task-details">ISP Date: ${dueDate.toLocaleDateString()}</span>`;
-                        }
-                        if (isSameDay(dueDate180Obj, today)) {
-                            taskText += `<span class="task-details">180 Due: ${dueDate180Obj.toLocaleDateString()}</span>`;
-                        }
-                        dueTodaySection.appendChild(li);
-                    } else if (dueDate >= today && dueDate <= upcomingThreshold) {
-                        taskText += ` - Due in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
+                // Convert the 180 days later date from Column F to a Date object (ensuring correct format)
+                const dueDate180Obj = new Date(dueDate180);
+
+                // Normalize both dates to compare only the date (remove time component)
+                dueDate.setHours(0, 0, 0, 0);
+                dueDate180Obj.setHours(0, 0, 0, 0);
+                today.setHours(0, 0, 0, 0);
+                upcomingThreshold.setHours(0, 0, 0, 0);
+
+                const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24)); // Countdown in days
+
+                // Create the list item to display the task
+                const li = document.createElement('li');
+                li.classList.add('task-item');
+
+                let taskText = `<strong>${name}</strong>`;
+
+                // Check if it's due today
+                if (daysLeft === 0 || isSameDay(dueDate180Obj, today)) {
+                    taskText += ` <span class="due-today"><strong>DUE TODAY</strong></span>`;
+                    if (isSameDay(dueDate, today)) {
                         taskText += `<span class="task-details">ISP Date: ${dueDate.toLocaleDateString()}</span>`;
-                        if (dueDate180Obj) {
-                            taskText += `<span class="task-details">180 Date: ${dueDate180Obj.toLocaleDateString()}</span>`;
-                        }
-                        upcomingSection.appendChild(li);
                     }
-
-                    li.innerHTML = taskText;
+                    if (isSameDay(dueDate180Obj, today)) {
+                        taskText += `<span class="task-details">180 Due: ${dueDate180Obj.toLocaleDateString()}</span>`;
+                    }
+                    dueTodaySection.appendChild(li);
+                } else if (dueDate >= today && dueDate <= upcomingThreshold) {
+                    taskText += ` - Due in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
+                    taskText += `<span class="task-details">ISP Date: ${dueDate.toLocaleDateString()}</span>`;
+                    if (dueDate180Obj) {
+                        taskText += `<span class="task-details">180 Date: ${dueDate180Obj.toLocaleDateString()}</span>`;
+                    }
+                    upcomingTasks.push({ taskText, li, dueDate });
                 }
-            });
 
-            // Add a section divider between "Due Today" and "Upcoming Due Dates"
-            const sectionDivider = document.createElement('div');
-            sectionDivider.classList.add('section-divider');
-            taskList.appendChild(sectionDivider);
-        }
+                li.innerHTML = taskText;
+            }
+        });
 
-        function isSameDay(date1, date2) {
-            // Check if two dates are on the same day, ignoring year
-            return date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
-        }
+        // Sort the upcoming tasks by due date in ascending order
+        upcomingTasks.sort((a, b) => a.dueDate - b.dueDate);
 
-        fetchData();
-    </script>
+        // Append sorted upcoming tasks to the upcoming section
+        upcomingTasks.forEach(task => {
+            upcomingSection.appendChild(task.li);
+        });
+
+        // Add a section divider between "Due Today" and "Upcoming Due Dates"
+        const sectionDivider = document.createElement('div');
+        sectionDivider.classList.add('section-divider');
+        taskList.appendChild(sectionDivider);
+    }
+
+    function isSameDay(date1, date2) {
+        // Check if two dates are on the same day, ignoring year
+        return date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
+    }
+
+    fetchData();
+</script>
+
 </body>
 </html>
